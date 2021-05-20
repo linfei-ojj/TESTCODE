@@ -1,0 +1,47 @@
+clc;
+close all;
+clear all;
+
+load([ 'E:\data_1_c']);
+load([ 'E:\data_0_c']);
+[M1 N1] = size(data_1_c);
+[M2 N1] = size(data_0_c);
+data=[data_1_c;data_0_c];
+load([ 'E:\diuqi.mat']);
+data(:,diuqi)=[];
+data_te=data;
+load([ 'E:\diuqi1.mat']);
+data_te(:,diuqi1)=[];
+data=data_te;
+label = [ones(M1, 1); zeros(M2, 1)];
+len=length(label);
+index=[1:len]';
+aresult_all=[];
+model1=load('E:\svm_sfs1_model1.mat');
+model2=load('E:\svm_sfs1_model2.mat');
+model3=load('E:\svm_sfs1_model3.mat');
+model4=load('E:\svm_sfs1_model4.mat');
+model5=load('E:\svm_sfs1_model5.mat');
+A=load('E:\XR_SFS1_SVM_TEZHENG.mat');
+cols=A.fff;
+model_all=[model1,model2,model3,model4,model5];
+for j=1:5
+model=model_all(j).model;
+index_1= index(1:M1);index_0= index(M1+1:end);
+i=1;cv=1;
+test_ind_1  = index_1([1:M1]');
+ test_ind_0 = index_0([1:M2]');
+ test_ind = [test_ind_1;test_ind_0 ];
+ testLabel=label(test_ind );
+ testdata=data(test_ind,:);
+ testdata=testdata(:,cols);
+           [predicted_label, accuracy,decisionvalue] = libsvmpredict(testLabel ,testdata, model,'-b 0');
+           predicted_label_all(test_ind)=predicted_label;
+           decisionvalue_all(test_ind)=decisionvalue(:,1);  
+[accuracy,sensitivity,specificity,auc,TP,TN,FP,FN] = classifyPerform(predicted_label_all',label,decisionvalue_all');
+aresult=[accuracy,sensitivity,specificity,auc,TP,TN,FP,FN];
+aresult_all=[aresult_all;aresult];
+end
+aresult_all_mean=mean(aresult_all(:,[1:4]));
+decisionvalue_all=decisionvalue_all';
+predicted_label_all=predicted_label_all';
